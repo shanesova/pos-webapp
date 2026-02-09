@@ -3,6 +3,19 @@ import { db, clearSalesData, convertToCSV } from "../db";
 import DecisionDialog from "./DecisionDialog";
 
 export default function SettingsView() {
+  const [taxRate, setTaxRate] = useState(() => {
+    const saved = localStorage.getItem("taxRate");
+    return saved ? (parseFloat(saved) * 100).toFixed(3) : "7.625";
+  });
+
+  const handleTaxRateChange = (value) => {
+    setTaxRate(value);
+    const rate = parseFloat(value);
+    if (!isNaN(rate) && rate >= 0 && rate <= 100) {
+      localStorage.setItem("taxRate", (rate / 100).toString());
+    }
+  };
+
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     title: "",
@@ -70,7 +83,28 @@ export default function SettingsView() {
 
   return (
     <>
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-xl mx-auto space-y-4">
+        {/* Tax Rate */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold mb-4">Tax Rate</h2>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              value={taxRate}
+              onChange={(e) => handleTaxRateChange(e.target.value)}
+              className="w-32 px-3 py-2 border rounded text-lg"
+              step="0.001"
+              min="0"
+              max="100"
+            />
+            <span className="text-lg text-gray-600">%</span>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
+            Currently: {taxRate}% — Changes apply immediately to new sales.
+          </p>
+        </div>
+
+        {/* Database Management */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold mb-4">Database Management</h2>
           <div className="space-y-2">

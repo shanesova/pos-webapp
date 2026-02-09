@@ -16,7 +16,7 @@ db.version(1).stores({
 });
 
 // Database operations (like your VBA functions)
-export async function saveSale(items, paymentMethod, existingSaleId = null, taxRate = 0.0762) {
+export async function saveSale(items, paymentMethod, existingSaleId = null, taxRate = 0.07625) {
   console.log('=== saveSale called ===');
   console.log('Items:', items.length);
   console.log('Payment:', paymentMethod);

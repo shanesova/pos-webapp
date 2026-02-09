@@ -49,7 +49,32 @@ export default function POS() {
 
   // Calculate totals (like RecalcTotals)
   const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
-  const taxRate = 0.0762; // 7.62% - match your Excel
+  const [taxRate, setTaxRate] = useState(() => {
+    const saved = localStorage.getItem("taxRate");
+    return saved ? parseFloat(saved) : 0.07625;
+  });
+
+  // Listen for tax rate changes from Settings page
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.key === "taxRate") {
+        setTaxRate(parseFloat(e.newValue) || 0.07625);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    // Also check on tab focus (for same-tab updates)
+    const handleFocus = () => {
+      const saved = localStorage.getItem("taxRate");
+      if (saved) setTaxRate(parseFloat(saved));
+    };
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
   const tax = taxEnabled ? Math.round(subtotal * taxRate * 100) / 100 : 0;
   const total = subtotal + tax;
 
@@ -349,7 +374,7 @@ export default function POS() {
                     }}
                     className="w-4 h-4"
                   />
-                  <span>Tax (7.62%):</span>
+                  <span>Tax ({(taxRate * 100).toFixed(3)}%):</span>
                 </label>
                 <span>${tax.toFixed(2)}</span>
               </div>
