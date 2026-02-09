@@ -2,6 +2,7 @@ import { useState } from "react";
 import POS from "./POS";
 import ProductsView from "./components/ProductsView";
 import SalesView from "./components/SalesView";
+import SettingsView from "./components/SettingsView";
 import "./index.css";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
     { id: "pos", label: "POS" },
     { id: "products", label: "Products" },
     { id: "sales", label: "Sales" },
+    { id: "settings", label: "Settings" },
   ];
 
   return (
@@ -42,6 +44,7 @@ function App() {
           {activeTab === "pos" && <POS />}
           {activeTab === "products" && <ProductsView />}
           {activeTab === "sales" && <SalesView />}
+          {activeTab === "settings" && <SettingsView />}
         </div>
       </div>
     </div>

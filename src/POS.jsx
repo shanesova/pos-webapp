@@ -3,13 +3,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 import {
   saveSale,
   loadSale,
-  deleteSale,
   getAllProducts,
   getProductPrice,
   initializeSampleData,
-  clearSalesData,
-  convertToCSV,
-  db,
 } from "./db";
 import DecisionDialog from "./components/DecisionDialog";
 
@@ -220,41 +216,6 @@ export default function POS() {
     }
   };
 
-  // Delete sale (like POS_Delete)
-  const handleDelete = async () => {
-    let saleId = currentSaleId;
-
-    if (!saleId) {
-      const input = prompt("Enter Sale ID to delete:");
-      if (!input) return;
-      saleId = parseInt(input);
-    }
-
-    if (isNaN(saleId)) {
-      alert("Please enter a numeric Sale ID.");
-      return;
-    }
-
-    const choice = await showDecision(
-      "Delete Sale",
-      `Are you sure you want to delete sale ${saleId}? This action cannot be undone.`,
-      [
-        { label: "Delete", value: "delete", variant: "danger" },
-        { label: "Cancel", value: "cancel", variant: "secondary" },
-      ]
-    );
-
-    if (choice !== "delete") return;
-
-    try {
-      await deleteSale(saleId);
-      handleNew(); // Clear form
-      alert(`Deleted sale: ${saleId}`);
-    } catch (error) {
-      alert("Error deleting: " + error.message);
-    }
-  };
-
   // Print receipt (like POS_Print)
   const handlePrint = async () => {
     // Check if needs save
@@ -282,49 +243,6 @@ export default function POS() {
 
     // Open print window
     window.print();
-  };
-
-  const downloadCSV = async (tableName) => {
-    try {
-      const data = await db[tableName].toArray();
-      if (data.length === 0) {
-        alert(`No data found in ${tableName} to export.`);
-        return;
-      }
-      const csv = convertToCSV(data);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      alert("Error exporting CSV: " + error.message);
-    }
-  };
-
-  const handleResetData = async () => {
-    const choice = await showDecision(
-      "Reset Database",
-      "Are you sure you want to clear ALL sales and sale lines? This cannot be undone.",
-      [
-        { label: "YES - Clear Everything", value: "reset", variant: "danger" },
-        { label: "Cancel", value: "cancel", variant: "secondary" },
-      ]
-    );
-
-    if (choice === "reset") {
-      try {
-        await clearSalesData();
-        handleNew(); // Reset current view
-        alert("Database cleared successfully.");
-      } catch (error) {
-        alert("Error clearing database: " + error.message);
-      }
-    }
   };
 
   return (
@@ -484,13 +402,6 @@ export default function POS() {
               </button>
 
               <button
-                onClick={handleDelete}
-                className="w-full px-4 py-3 bg-red-500 text-white rounded hover:bg-red-600 font-medium"
-              >
-                Delete
-              </button>
-
-              <button
                 onClick={handlePrint}
                 className="w-full px-4 py-3 bg-purple-500 text-white rounded hover:bg-purple-600 font-medium"
               >
@@ -499,38 +410,6 @@ export default function POS() {
             </div>
           </div>
 
-          {/* Database Management */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">Database Management</h2>
-            <div className="space-y-2">
-              <div className="grid grid-cols-1 gap-2">
-                <button
-                  onClick={() => downloadCSV("products")}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm font-medium border border-gray-200"
-                >
-                  Export Products CSV
-                </button>
-                <button
-                  onClick={() => downloadCSV("sales")}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm font-medium border border-gray-200"
-                >
-                  Export Sales CSV
-                </button>
-                <button
-                  onClick={() => downloadCSV("saleLines")}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm font-medium border border-gray-200"
-                >
-                  Export Sale Lines CSV
-                </button>
-              </div>
-              <button
-                onClick={handleResetData}
-                className="w-full mt-4 px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm font-bold border border-red-100"
-              >
-                Clear All History
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
